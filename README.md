@@ -8,4 +8,9 @@ Each project has it's own README with instructions. There are 2 projects in tota
 
 ## Limitations
 
-Try and not spend more than 2 hours on the test.
+Try and not spend more than 2 hours on the test. 
+
+## Usage
+
+Please fork this repository and once complete create a pull request.
+
