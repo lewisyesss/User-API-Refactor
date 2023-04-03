@@ -7,3 +7,5 @@ We would like you to refactor the UserControllerTests.
 ## Limitations
 
 Do NOT change the test expectations.
+
+The tests must all pass.
