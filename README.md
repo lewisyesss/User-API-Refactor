@@ -10,7 +10,7 @@ Each project has it's own README with instructions. There are 2 projects in tota
 
 Try and not spend more than 2 hours on the test. 
 
-Do not change the user controller test expecations.
+Do not change the user controller test expectations.
 
 The user controller tests must all pass.
 
