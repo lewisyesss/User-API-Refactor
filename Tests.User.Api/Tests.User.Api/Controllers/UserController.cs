@@ -58,7 +58,7 @@ public class UserController : Controller
     /// <param name="age">Age of the user (must be a number)</param>
     /// <returns></returns>
     [HttpPost]
-    [Route("api/users")]
+    [Route("api/create_user")]
     public IActionResult Create(string firstName, string lastName, string age)
     {
         List<string> missingValues = MissingParameters(firstName, lastName, age);
@@ -93,7 +93,7 @@ public class UserController : Controller
     /// <param name="age">Age of the user (must be a number)</param>
     /// <returns></returns>
     [HttpPut]
-    [Route("api/users")]
+    [Route("api/update_user/{id}")]
     public IActionResult Update(int id, string firstName, string lastName, string age)
     {
         List<string> missingValues = MissingParameters(firstName, lastName, age);
@@ -130,7 +130,7 @@ public class UserController : Controller
     /// <param name="id">ID of the user</param>
     /// <returns></returns>
     [HttpDelete]
-    [Route("api/users")]
+    [Route("api/delete_user/{id}")]
     public IActionResult Delete(int id)
     {
         Models.User? user = database.Users.Where(x => x.Id == id).FirstOrDefault();
