@@ -13,9 +13,19 @@ namespace Tests.User.Api.Controllers
         [Route("api/users")]
         public IActionResult Get(int id)
         {
-            DatabaseContext database = new DatabaseContext();
-            Models.User user = database.Users.Where(user => user.Id == id).First();
-            return Ok(user);
+            //DatabaseContext database = new DatabaseContext();
+            using (DatabaseContext db = new DatabaseContext())
+            {
+                var user = db.Users.FirstOrDefault(user => user.Id == id);
+
+                if (user == null)
+                    return NotFound();
+                
+                return Ok(user);
+            }
+            
+            // return a error
+            return StatusCode(500);
         }
 
         /// <summary>
