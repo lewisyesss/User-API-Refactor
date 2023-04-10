@@ -8,22 +8,32 @@ namespace Tests.User.Api.Test
         [Fact]
         public async Task Should_Return_User_When_Valid_Id_Passed()
         {
-            DatabaseContext database = new DatabaseContext();
-            Models.User user = new Models.User
+            using (var db = new DatabaseContext())
             {
-                FirstName = "Test",
-                LastName = "User",
-                Age = "20"
-            };
-            database.Users.Add(user);
-            database.SaveChanges();
+                var newUser = new Models.User
+                {
+                    Age = "20",
+                    FirstName = "Test",
+                    LastName = "User"
+                };
+                
+                db.Users.Add(newUser);
+                try
+                {
+                    await db.SaveChangesAsync();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
 
-            UserController controller = new UserController();
-            IActionResult result = controller.Get(user.Id);
-            OkObjectResult ok = result as OkObjectResult;           
+                UserController controller = new UserController();
+                IActionResult result = controller.Get(newUser.Id);
+                OkObjectResult ok = result as OkObjectResult;
 
-            Assert.NotNull(ok);
-            Assert.Equal(200, ok.StatusCode);            
+                Assert.NotNull(ok);
+                Assert.Equal(200, ok.StatusCode);
+            }
         }
 
         [Fact]
@@ -31,6 +41,14 @@ namespace Tests.User.Api.Test
         {
             UserController controller = new UserController();
             IActionResult result = controller.Create("Test", "User", "20");
+            
+            // bad request check added but not sure if needed
+            if (result is BadRequestObjectResult)
+            {
+                var badRequest = result as BadRequestObjectResult;
+                Assert.NotNull(badRequest);
+                Assert.Equal(400, badRequest.StatusCode);
+            }
 
             OkResult ok = result as OkResult;
 
@@ -41,45 +59,72 @@ namespace Tests.User.Api.Test
         [Fact]
         public async Task Should_Return_Valid_When_User_Updated()
         {
-            DatabaseContext database = new DatabaseContext();
-            Models.User user = new Models.User
-            {
-                FirstName = "Test",
-                LastName = "User",
-                Age = "20"
-            };
-            database.Users.Add(user);
-            database.SaveChanges();
+            using (var db = new DatabaseContext()) 
+            { 
+                Models.User user = new Models.User {
+                    FirstName = "Test",
+                    LastName = "User",
+                    Age = "20"
+                };
+                db.Users.Add(user);
 
-            UserController controller = new UserController();
-            IActionResult result = controller.Update(user.Id, "Updated", "User", "21");
+                try
+                {
+                    await db.SaveChangesAsync();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
 
-            OkResult ok = result as OkResult;
+                UserController controller = new UserController();
+                IActionResult result = controller.Update(user.Id, "Updated", "User", "21");
 
-            Assert.NotNull(ok);
-            Assert.Equal(200, ok.StatusCode);
+                // bad request check added but not sure if needed
+                if (result is BadRequestObjectResult)
+                {
+                    var badRequest = result as BadRequestObjectResult;
+                    Assert.NotNull(badRequest);
+                    Assert.Equal(400, badRequest.StatusCode);
+                }
+                
+                OkResult ok = result as OkResult;
+
+                Assert.NotNull(ok);
+                Assert.Equal(200, ok.StatusCode);
+            }
         }
 
         [Fact]
         public async Task Should_Return_Valid_When_User_Removed()
         {
-            DatabaseContext database = new DatabaseContext();
-            Models.User user = new Models.User
+            using (var db = new DatabaseContext())
             {
-                FirstName = "Test",
-                LastName = "User",
-                Age = "20"
-            };
-            database.Users.Add(user);
-            database.SaveChanges();
+                Models.User user = new Models.User
+                {
+                    FirstName = "Test",
+                    LastName = "User",
+                    Age = "20"
+                };
+                db.Users.Add(user);
+                await db.SaveChangesAsync();
 
-            UserController controller = new UserController();
-            IActionResult result = controller.Delete(user.Id);
+                UserController controller = new UserController();
+                IActionResult result = controller.Delete(user.Id);
 
-            OkResult ok = result as OkResult;
+                // bad request check added but not sure if needed
+                if (result is BadRequestObjectResult)
+                {
+                    var badRequest = result as BadRequestObjectResult;
+                    Assert.NotNull(badRequest);
+                    Assert.Equal(400, badRequest.StatusCode);
+                }
+                
+                OkResult ok = result as OkResult;
 
-            Assert.NotNull(ok);
-            Assert.Equal(200, ok.StatusCode);
+                Assert.NotNull(ok);
+                Assert.Equal(200, ok.StatusCode);
+            }
         }
     }
 }
