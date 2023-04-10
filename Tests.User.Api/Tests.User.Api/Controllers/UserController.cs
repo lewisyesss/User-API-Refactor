@@ -11,8 +11,7 @@ namespace Tests.User.Api.Controllers
         /// <param name="id">ID of the user</param>
         /// <returns></returns>
         [HttpGet]
-        [Route("api/users")]
-        [Authorize]
+        [Route("api/get/user{id}")]
         public IActionResult Get(int id)
         {
             using (var db = new DatabaseContext())
@@ -38,8 +37,7 @@ namespace Tests.User.Api.Controllers
         /// <param name="age">Age of the user (must be a number)</param>
         /// <returns></returns>
         [HttpPost]
-        [Route("api/users")]
-        [Authorize]
+        [Route("api/create/user")]
         public IActionResult Create(string firstName, string lastName, string age)
         {
             using (var db = new DatabaseContext())
@@ -74,8 +72,7 @@ namespace Tests.User.Api.Controllers
         /// <param name="age">Age of the user (must be a number)</param>
         /// <returns></returns>
         [HttpPut]
-        [Route("api/users")]
-        [Authorize]
+        [Route("api/update/user{id}")]
         public IActionResult Update(int id, string firstName, string lastName, string age)
         {
             if (id != null)
@@ -125,8 +122,7 @@ namespace Tests.User.Api.Controllers
         /// <param name="id">ID of the user</param>
         /// <returns></returns>
         [HttpDelete]
-        [Route("api/users")]
-        [Authorize]
+        [Route("api/delete/user/{id}")]
         public IActionResult Delete(int id)
         {
             if (id != null)
