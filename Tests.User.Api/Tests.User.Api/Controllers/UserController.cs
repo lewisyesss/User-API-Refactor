@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Tests.User.Api.Controllers
 {
@@ -10,12 +11,22 @@ namespace Tests.User.Api.Controllers
         /// <param name="id">ID of the user</param>
         /// <returns></returns>
         [HttpGet]
-        [Route("api/users")]
+        [Route("api/get/user{id}")]
         public IActionResult Get(int id)
         {
-            DatabaseContext database = new DatabaseContext();
-            Models.User user = database.Users.Where(user => user.Id == id).First();
-            return Ok(user);
+            using (var db = new DatabaseContext())
+            {
+                var user = db.Users.FirstOrDefault(user => user.Id == id);
+
+                if (user == null)
+                {
+                    // maybe do some form of logging
+                    
+                    return NotFound();
+                }
+
+                return Ok(user);
+            }
         }
 
         /// <summary>
@@ -26,18 +37,30 @@ namespace Tests.User.Api.Controllers
         /// <param name="age">Age of the user (must be a number)</param>
         /// <returns></returns>
         [HttpPost]
-        [Route("api/users")]
+        [Route("api/create/user")]
         public IActionResult Create(string firstName, string lastName, string age)
         {
-            DatabaseContext Database = new DatabaseContext();
-            Database.Users.Add(new Models.User
+            using (var db = new DatabaseContext())
             {
-                Age = age,
-                FirstName = firstName,
-                LastName = lastName
-            });
-            Database.SaveChanges();
-            return Ok();
+                db.Users.Add(new Models.User
+                {
+                    Age = age,
+                    FirstName = firstName,
+                    LastName = lastName
+                });
+
+                try
+                {
+                    db.SaveChanges();
+                    return Ok();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    // maybe do some form of logging
+                    return BadRequest();
+                }
+            }
         }
 
         /// <summary>
@@ -49,19 +72,48 @@ namespace Tests.User.Api.Controllers
         /// <param name="age">Age of the user (must be a number)</param>
         /// <returns></returns>
         [HttpPut]
-        [Route("api/users")]
+        [Route("api/update/user{id}")]
         public IActionResult Update(int id, string firstName, string lastName, string age)
         {
-            DatabaseContext Database = new DatabaseContext();
-            Database.Users.Update(new Models.User
+            if (id != null)
             {
-                Age = age,
-                FirstName = firstName,
-                LastName = lastName,
-                Id = id
-            });
-            Database.SaveChanges();
-            return Ok();
+                using (var db = new DatabaseContext())
+                {
+                    // check if user exists
+                    var user = db.Users.FirstOrDefault(user => user.Id == id);
+                
+                    //if user doesn't exist, return 404
+                    if (user == null)
+                    {
+                        // maybe do some form of logging
+                        return NotFound();
+                    }
+                    else
+                    {
+                        user.Age = age;
+                        user.FirstName = firstName;
+                        user.LastName = lastName;
+                        
+                        try
+                        {
+                            db.SaveChanges();
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine($"Error: In updating user with user id {id} as we got exception of {e.Message}");
+                            // maybe also log the above message too in some form of logger
+                            return BadRequest();
+                        }
+                        return Ok();
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine($"Error: No user id provided");
+                // maybe also log the above message too in some form of logger
+                return NotFound();
+            }
         }
 
         /// <summary>
@@ -70,16 +122,43 @@ namespace Tests.User.Api.Controllers
         /// <param name="id">ID of the user</param>
         /// <returns></returns>
         [HttpDelete]
-        [Route("api/users")]
+        [Route("api/delete/user/{id}")]
         public IActionResult Delete(int id)
         {
-            DatabaseContext database = new DatabaseContext();
-            database.Users.Remove(new Models.User
+            if (id != null)
             {
-                Id = id
-            });
-            database.SaveChanges();
-            return Ok();
+                using (var db = new DatabaseContext())
+                {
+                    var user = db.Users.FirstOrDefault(user => user.Id == id);
+
+                    if (user == null)
+                    {
+                        // maybe do some form of logging
+                        return NotFound();
+                    }
+                    else
+                    {
+                        db.Users.Remove(user);
+
+                        try
+                        {
+                            db.SaveChanges();
+                            return Ok();
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine($"Error: In deleting user with user id {id} as we got exception of {e.Message}");
+                            return BadRequest();
+                        }
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine($"Error: No user id provided");
+                // maybe also log the above message too in some form of logger
+                return NotFound();
+            }
         }
     }
 }
