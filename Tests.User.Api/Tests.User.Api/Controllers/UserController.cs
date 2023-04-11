@@ -1,9 +1,20 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Tests.Users.Api.DTO;
+using Tests.Users.Api.Interfaces;
 
-namespace Tests.User.Api.Controllers
+namespace Tests.Users.Api.Controllers
 {
     public class UserController : Controller
     {
+        private readonly ILogger<UserController> _logger;
+        private readonly IUserService _userService;
+
+        public UserController(ILogger<UserController> logger, IUserService userService)
+        {            
+            _logger = logger;
+            _userService = userService;
+        }
+
         /// <summary>
         ///     Gets a user
         /// </summary>
@@ -13,9 +24,12 @@ namespace Tests.User.Api.Controllers
         [Route("api/users")]
         public IActionResult Get(int id)
         {
-            DatabaseContext database = new DatabaseContext();
-            Models.User user = database.Users.Where(user => user.Id == id).First();
-            return Ok(user);
+
+             var user  = _userService.Get(id);
+            if(user != null) return Ok(user);
+
+            return NotFound();
+
         }
 
         /// <summary>
@@ -27,17 +41,25 @@ namespace Tests.User.Api.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("api/users")]
-        public IActionResult Create(string firstName, string lastName, string age)
+        public IActionResult Create([FromBody] UserDto user)
         {
-            DatabaseContext Database = new DatabaseContext();
-            Database.Users.Add(new Models.User
+            if (user == null || !ModelState.IsValid)
             {
-                Age = age,
-                FirstName = firstName,
-                LastName = lastName
-            });
-            Database.SaveChanges();
-            return Ok();
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var createUser = _userService.Create(user);
+
+                return Ok(createUser);
+            }
+            catch (Exception ex)
+            {
+                // Log the error and return an error response
+                _logger.LogError(ex, "Failed to create User");
+                return StatusCode(500, "An error occurred while creating your user.");
+            }            
         }
 
         /// <summary>
@@ -50,18 +72,25 @@ namespace Tests.User.Api.Controllers
         /// <returns></returns>
         [HttpPut]
         [Route("api/users")]
-        public IActionResult Update(int id, string firstName, string lastName, string age)
+        public IActionResult Update(UserDto user)
         {
-            DatabaseContext Database = new DatabaseContext();
-            Database.Users.Update(new Models.User
+            if (user == null || !ModelState.IsValid)
             {
-                Age = age,
-                FirstName = firstName,
-                LastName = lastName,
-                Id = id
-            });
-            Database.SaveChanges();
-            return Ok();
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var updatedUser = _userService.Update(user);
+
+                return Ok(updatedUser);
+            }
+            catch (Exception ex)
+            {
+                // Log the error and return an error response
+                _logger.LogError(ex, ex.Message);
+                return StatusCode(500, "An error occurred while updating user.");
+            }            
         }
 
         /// <summary>
@@ -73,13 +102,9 @@ namespace Tests.User.Api.Controllers
         [Route("api/users")]
         public IActionResult Delete(int id)
         {
-            DatabaseContext database = new DatabaseContext();
-            database.Users.Remove(new Models.User
-            {
-                Id = id
-            });
-            database.SaveChanges();
-            return Ok();
+            var isDeleted = _userService.Delete(id);
+            
+            return Ok(isDeleted);
         }
     }
 }
