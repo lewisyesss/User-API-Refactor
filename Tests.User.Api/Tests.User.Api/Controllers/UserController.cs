@@ -14,8 +14,22 @@ namespace Tests.User.Api.Controllers
         public IActionResult Get(int id)
         {
             DatabaseContext database = new DatabaseContext();
-            Models.User user = database.Users.Where(user => user.Id == id).First();
-            return Ok(user);
+            /// Created a try-catch exception to handle InavlidOperationException which is when the id doesn't exist in the database
+            try
+            {
+                Models.User user = database.Users.Where(user => user.Id == id).First();
+
+                return Ok(user);
+            }
+            
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine("User with ID {O} not found in the database.", id);
+                return NotFound();
+            }
+            
+
+           
         }
 
         /// <summary>
@@ -27,17 +41,33 @@ namespace Tests.User.Api.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("api/users")]
+
+        
         public IActionResult Create(string firstName, string lastName, string age)
         {
-            DatabaseContext Database = new DatabaseContext();
-            Database.Users.Add(new Models.User
+
+            /// Checking if age string value is a number and if it is then create the User else get an error message
+            int testIfNumber;
+            bool result = int.TryParse(age, out testIfNumber);
+
+            if(result)
             {
-                Age = age,
-                FirstName = firstName,
-                LastName = lastName
-            });
-            Database.SaveChanges();
-            return Ok();
+                DatabaseContext Database = new DatabaseContext();
+                Database.Users.Add(new Models.User
+                {
+                    /// Changed the order of the parameters to match the IActionResult Create method structure
+                    FirstName = firstName,
+                    LastName = lastName,
+                    Age = age
+                });
+                Database.SaveChanges();
+                return Ok();
+            }
+            else
+            {
+                return BadRequest("Invalid age value. Age must be a number");
+            }
+            
         }
 
         /// <summary>
@@ -52,18 +82,30 @@ namespace Tests.User.Api.Controllers
         [Route("api/users")]
         public IActionResult Update(int id, string firstName, string lastName, string age)
         {
-            DatabaseContext Database = new DatabaseContext();
-            Database.Users.Update(new Models.User
-            {
-                Age = age,
-                FirstName = firstName,
-                LastName = lastName,
-                Id = id
-            });
-            Database.SaveChanges();
-            return Ok();
-        }
+            /// Checking if age string value is a number and if it is then create the User else get an error message
+            int testIfNumber;
+            bool result = int.TryParse(age, out testIfNumber);
 
+            if (result)
+            {
+
+                DatabaseContext Database = new DatabaseContext();
+                Database.Users.Update(new Models.User
+                {
+                    /// Changed the order of the parameters to match the IActionResult Update method 
+                    Id = id,
+                    FirstName = firstName,
+                    LastName = lastName,
+                    Age = age
+                });
+                Database.SaveChanges();
+                return Ok();
+            }
+            else
+            {
+                return BadRequest("Invalid age value. Age must be a number");
+            }
+        }
         /// <summary>
         ///     Delets a user
         /// </summary>
@@ -71,15 +113,29 @@ namespace Tests.User.Api.Controllers
         /// <returns></returns>
         [HttpDelete]
         [Route("api/users")]
+
+
         public IActionResult Delete(int id)
         {
             DatabaseContext database = new DatabaseContext();
-            database.Users.Remove(new Models.User
+            /// Created a try-catch exception to handle InavlidOperationException which is when the id doesn't exist in the database
+            try
             {
-                Id = id
-            });
-            database.SaveChanges();
-            return Ok();
+                database.Users.Remove(new Models.User
+                {
+                    Id = id
+                });
+                database.SaveChanges();
+                return Ok(); 
+            }
+
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine("User with ID {O} not found in the database.", id);
+                return NotFound();
+            }
+            
+            
         }
     }
 }
