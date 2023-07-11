@@ -1,20 +1,32 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Tests.User.Api.Interfaces;
+using Tests.User.Api.Models;
+using Tests.User.Api.POCO;
 
 namespace Tests.User.Api.Controllers
 {
     public class UserController : Controller
     {
+        IUserService _userService;
+        public UserController(IUserService userService) 
+        {
+            _userService = userService;
+        }
+
         /// <summary>
         ///     Gets a user
         /// </summary>
         /// <param name="id">ID of the user</param>
         /// <returns></returns>
         [HttpGet]
-        [Route("api/users")]
+        [Route("api/users/get")]
         public IActionResult Get(int id)
         {
-            DatabaseContext database = new DatabaseContext();
-            Models.User user = database.Users.Where(user => user.Id == id).First();
+            var user = _userService.GetUser(id);
+            if(user == null)
+            {
+                return BadRequest($"User with ID {id} could not be found");
+            }
             return Ok(user);
         }
 
@@ -26,18 +38,14 @@ namespace Tests.User.Api.Controllers
         /// <param name="age">Age of the user (must be a number)</param>
         /// <returns></returns>
         [HttpPost]
-        [Route("api/users")]
-        public IActionResult Create(string firstName, string lastName, string age)
+        [Route("api/users/create")]
+        public IActionResult Create(UserPOCO user)
         {
-            DatabaseContext Database = new DatabaseContext();
-            Database.Users.Add(new Models.User
+            if (!_userService.CreateUser(user))
             {
-                Age = age,
-                FirstName = firstName,
-                LastName = lastName
-            });
-            Database.SaveChanges();
-            return Ok();
+                return BadRequest("User could not be added");
+            }
+            return Ok("User has been created");
         }
 
         /// <summary>
@@ -49,19 +57,14 @@ namespace Tests.User.Api.Controllers
         /// <param name="age">Age of the user (must be a number)</param>
         /// <returns></returns>
         [HttpPut]
-        [Route("api/users")]
-        public IActionResult Update(int id, string firstName, string lastName, string age)
+        [Route("api/users/update")]
+        public IActionResult Update(UserPOCO user)
         {
-            DatabaseContext Database = new DatabaseContext();
-            Database.Users.Update(new Models.User
+            if (!_userService.UpdateUser(user))
             {
-                Age = age,
-                FirstName = firstName,
-                LastName = lastName,
-                Id = id
-            });
-            Database.SaveChanges();
-            return Ok();
+                return BadRequest("User could not be updated");
+            }
+            return Ok($"User has been updated");
         }
 
         /// <summary>
@@ -70,16 +73,14 @@ namespace Tests.User.Api.Controllers
         /// <param name="id">ID of the user</param>
         /// <returns></returns>
         [HttpDelete]
-        [Route("api/users")]
+        [Route("api/users/delete")]
         public IActionResult Delete(int id)
         {
-            DatabaseContext database = new DatabaseContext();
-            database.Users.Remove(new Models.User
+            if (!_userService.DeleteUser(id))
             {
-                Id = id
-            });
-            database.SaveChanges();
-            return Ok();
+                return BadRequest($"User with Id {id} could not be deleted");
+            }
+            return Ok($"User with Id {id} has been deleted");
         }
     }
 }

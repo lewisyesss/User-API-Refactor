@@ -1,85 +1,103 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Moq;
+using NuGet.Frameworks;
 using Tests.User.Api.Controllers;
+using Tests.User.Api.Interfaces;
+using Tests.User.Api.Models;
+using Tests.User.Api.POCO;
+using Xunit;
 
 namespace Tests.User.Api.Test
 {
     public class UserControllerTests
     {
+        private readonly Mock<IUserService> _userService;
+        private readonly UserController _userController;
+        private DatabaseContext _databaseContext;
+        public UserControllerTests()
+        {
+            _userService= new Mock<IUserService>();
+            _userController = new UserController(_userService.Object);
+            _databaseContext = new DatabaseContext();
+        }
         [Fact]
         public async Task Should_Return_User_When_Valid_Id_Passed()
         {
-            DatabaseContext database = new DatabaseContext();
-            Models.User user = new Models.User
+            UserPOCO testObject = new UserPOCO()
             {
+                Id = 1,
                 FirstName = "Test",
                 LastName = "User",
-                Age = "20"
+                Age = 20
             };
-            database.Users.Add(user);
-            database.SaveChanges();
+            _databaseContext.Users.Add(testObject.ToModel());
+            _databaseContext.SaveChanges();
 
-            UserController controller = new UserController();
-            IActionResult result = controller.Get(user.Id);
-            OkObjectResult ok = result as OkObjectResult;           
+            _userService.Setup(u => u.GetUser(testObject.Id)).Returns(testObject.ToModel());
+            var result = (OkObjectResult)_userController.Get(testObject.Id);
 
-            Assert.NotNull(ok);
-            Assert.Equal(200, ok.StatusCode);            
+            Assert.True(result is OkObjectResult);
+            Assert.NotNull(result);
+            Assert.IsType<UserModel>(result.Value);
         }
 
         [Fact]
         public async Task Should_Return_Valid_When_User_Created()
         {
-            UserController controller = new UserController();
-            IActionResult result = controller.Create("Test", "User", "20");
+            UserPOCO testObject = new UserPOCO()
+            {
+                Id = 1,
+                FirstName = "Test",
+                LastName = "User",
+                Age = 20
+            };
+            _userService.Setup(b => b.CreateUser(testObject)).Returns(true);
+            var result = (OkObjectResult)_userController.Create(testObject);
 
-            OkResult ok = result as OkResult;
-
-            Assert.NotNull(ok);
-            Assert.Equal(200, ok.StatusCode);
+            Assert.True(result is OkObjectResult);
+            Assert.NotNull(result);
         }
 
         [Fact]
         public async Task Should_Return_Valid_When_User_Updated()
         {
-            DatabaseContext database = new DatabaseContext();
-            Models.User user = new Models.User
+            UserPOCO testObject = new UserPOCO()
             {
-                FirstName = "Test",
-                LastName = "User",
-                Age = "20"
+                Id = 1,
+                FirstName = "Testtest",
+                LastName = "Usertest",
+                Age = 25
             };
-            database.Users.Add(user);
-            database.SaveChanges();
 
-            UserController controller = new UserController();
-            IActionResult result = controller.Update(user.Id, "Updated", "User", "21");
+            _userService.Setup(u => u.UpdateUser(testObject)).Returns(true);
 
-            OkResult ok = result as OkResult;
+            testObject.FirstName = "Test";
+            var result = (OkObjectResult)_userController.Update(testObject);
 
-            Assert.NotNull(ok);
-            Assert.Equal(200, ok.StatusCode);
+            Assert.NotNull(result);
+            Assert.True(result is OkObjectResult);
         }
 
         [Fact]
         public async Task Should_Return_Valid_When_User_Removed()
         {
-            DatabaseContext database = new DatabaseContext();
-            Models.User user = new Models.User
+            UserPOCO testObject = new UserPOCO()
             {
+                Id = 4,
                 FirstName = "Test",
                 LastName = "User",
-                Age = "20"
+                Age = 2
             };
-            database.Users.Add(user);
-            database.SaveChanges();
+            _databaseContext.Users.Add(testObject.ToModel());
+            _databaseContext.SaveChanges();
 
-            UserController controller = new UserController();
-            IActionResult result = controller.Delete(user.Id);
+            _userService.Setup(u => u.DeleteUser(testObject.Id)).Returns(true);
+            var result = (OkObjectResult)_userController.Delete(testObject.Id);
 
-            OkResult ok = result as OkResult;
-
-            Assert.NotNull(ok);
-            Assert.Equal(200, ok.StatusCode);
+            Assert.True(result is OkObjectResult);
+            Assert.NotNull(result);
         }
     }
 }
