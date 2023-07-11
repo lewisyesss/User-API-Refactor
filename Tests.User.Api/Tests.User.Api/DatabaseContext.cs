@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Tests.User.Api.Models;
 
 namespace Tests.User.Api
 {
@@ -10,6 +11,6 @@ namespace Tests.User.Api
             optionsBuilder.UseInMemoryDatabase("Tests.User.Api");
         }
 
-        public DbSet<Models.User> Users { get; set; }
+        public DbSet<UserModel> Users { get; set; }
     }
 }
