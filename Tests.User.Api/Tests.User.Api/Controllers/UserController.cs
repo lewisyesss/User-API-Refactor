@@ -15,6 +15,12 @@ namespace Tests.User.Api.Controllers
         {
             DatabaseContext database = new DatabaseContext();
             Models.User user = database.Users.Where(user => user.Id == id).First();
+
+            // Checks if a user exists, if not return http 404 error
+            if (user == null) {
+                return HTTPNotFound(); 
+            }
+            
             return Ok(user);
         }
 
@@ -30,13 +36,17 @@ namespace Tests.User.Api.Controllers
         public IActionResult Create(string firstName, string lastName, string age)
         {
             DatabaseContext Database = new DatabaseContext();
-            Database.Users.Add(new Models.User
-            {
-                Age = age,
-                FirstName = firstName,
-                LastName = lastName
-            });
-            Database.SaveChanges();
+
+            // Validate the user model
+            if (ModelState.IsValid) {
+                Database.Users.Add(new Models.User
+                {
+                    Age = age,
+                    FirstName = firstName,
+                    LastName = lastName
+                });
+                Database.SaveChanges();
+            }
             return Ok();
         }
 
@@ -53,14 +63,18 @@ namespace Tests.User.Api.Controllers
         public IActionResult Update(int id, string firstName, string lastName, string age)
         {
             DatabaseContext Database = new DatabaseContext();
-            Database.Users.Update(new Models.User
-            {
-                Age = age,
-                FirstName = firstName,
-                LastName = lastName,
-                Id = id
-            });
-            Database.SaveChanges();
+            
+            // Validate user model
+            if (ModelState.IsValid) {
+                Database.Users.Update(new Models.User
+                {
+                    Age = age,
+                    FirstName = firstName,
+                    LastName = lastName,
+                    Id = id
+                });
+                Database.SaveChanges();
+            }
             return Ok();
         }
 
@@ -74,11 +88,15 @@ namespace Tests.User.Api.Controllers
         public IActionResult Delete(int id)
         {
             DatabaseContext database = new DatabaseContext();
-            database.Users.Remove(new Models.User
-            {
-                Id = id
-            });
-            database.SaveChanges();
+
+            // Validate user model
+            if (ModelState.IsValid) {
+                database.Users.Remove(new Models.User
+                {
+                    Id = id
+                });
+                database.SaveChanges();
+            }
             return Ok();
         }
     }
