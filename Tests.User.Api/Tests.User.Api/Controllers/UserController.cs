@@ -11,6 +11,9 @@ namespace Tests.User.Api.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("api/users")]
+        // Multiple response types are possible with IActionResult, so provide attribute for all possible response types
+        [ProducesResponseType(StatusCodes.Status200OK, Type=typeof(Models.User))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult Get(int id)
         {
             DatabaseContext database = new DatabaseContext();
@@ -32,8 +35,11 @@ namespace Tests.User.Api.Controllers
         /// <param name="age">Age of the user (must be a number)</param>
         /// <returns></returns>
         [HttpPost]
+        // Specify response types for IActionResult
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [Route("api/users")]
-        public IActionResult Create(string firstName, string lastName, string age)
+        public IActionResult Create(string firstName, string lastName, int age)
         {
             DatabaseContext Database = new DatabaseContext();
 
@@ -47,6 +53,8 @@ namespace Tests.User.Api.Controllers
                 });
                 Database.SaveChanges();
             }
+
+            // Return created result
             return Ok();
         }
 
@@ -60,7 +68,7 @@ namespace Tests.User.Api.Controllers
         /// <returns></returns>
         [HttpPut]
         [Route("api/users")]
-        public IActionResult Update(int id, string firstName, string lastName, string age)
+        public IActionResult Update(int id, string firstName, string lastName, int age)
         {
             DatabaseContext Database = new DatabaseContext();
             
