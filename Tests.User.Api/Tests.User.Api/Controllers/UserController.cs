@@ -16,6 +16,7 @@ namespace Tests.User.Api.Controllers
             DatabaseContext database = new DatabaseContext();
             Models.User user = database.Users.Where(user => user.Id == id).First();
             return Ok(user);
+            
         }
 
         /// <summary>
@@ -26,17 +27,28 @@ namespace Tests.User.Api.Controllers
         /// <param name="age">Age of the user (must be a number)</param>
         /// <returns></returns>
         [HttpPost]
+        // Specify response types for IActionResult
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [Route("api/users")]
-        public IActionResult Create(string firstName, string lastName, string age)
+        public IActionResult Create(string firstName, string lastName, int age)
         {
             DatabaseContext Database = new DatabaseContext();
-            Database.Users.Add(new Models.User
+
+            // Validate user model
+            if (ModelState.IsValid)
             {
-                Age = age,
-                FirstName = firstName,
-                LastName = lastName
-            });
-            Database.SaveChanges();
+                Database.Users.Add(new Models.User
+                {
+                    Age = age,
+                    FirstName = firstName,
+                    LastName = lastName
+                });
+
+                Database.SaveChanges();
+            }
+
+            // Could change to Created() to return 201 status 
             return Ok();
         }
 
@@ -50,7 +62,7 @@ namespace Tests.User.Api.Controllers
         /// <returns></returns>
         [HttpPut]
         [Route("api/users")]
-        public IActionResult Update(int id, string firstName, string lastName, string age)
+        public IActionResult Update(int id, string firstName, string lastName, int age)
         {
             DatabaseContext Database = new DatabaseContext();
             Database.Users.Update(new Models.User
