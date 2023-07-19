@@ -1,7 +1,3 @@
-// register DB context
-using Microsoft.EntityFrameworkCore;
-using Tests.User.Api.Models;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.

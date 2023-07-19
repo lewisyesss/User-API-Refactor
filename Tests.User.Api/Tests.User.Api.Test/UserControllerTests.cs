@@ -13,29 +13,33 @@ namespace Tests.User.Api.Test
             {
                 FirstName = "Test",
                 LastName = "User",
-                Age = "20"
+                Age = 20
             };
             database.Users.Add(user);
             database.SaveChanges();
 
+            await Task.Delay(3000);
+
             UserController controller = new UserController();
             IActionResult result = controller.Get(user.Id);
-            OkObjectResult ok = result as OkObjectResult;           
+            OkObjectResult? ok = result as OkObjectResult;           
 
             Assert.NotNull(ok);
-            Assert.Equal(200, ok.StatusCode);            
+            Assert.Equal(200, actual: ok.StatusCode);            
         }
 
         [Fact]
         public async Task Should_Return_Valid_When_User_Created()
         {
             UserController controller = new UserController();
-            IActionResult result = controller.Create("Test", "User", "20");
+            IActionResult result = controller.Create("Test", "User", 20);
 
-            OkResult ok = result as OkResult;
+            await Task.Delay(3000);
+
+            OkResult? ok = result as OkResult;
 
             Assert.NotNull(ok);
-            Assert.Equal(200, ok.StatusCode);
+            Assert.Equal(200, actual: ok.StatusCode);
         }
 
         [Fact]
@@ -46,18 +50,20 @@ namespace Tests.User.Api.Test
             {
                 FirstName = "Test",
                 LastName = "User",
-                Age = "20"
+                Age = 20
             };
             database.Users.Add(user);
             database.SaveChanges();
 
-            UserController controller = new UserController();
-            IActionResult result = controller.Update(user.Id, "Updated", "User", "21");
+            await Task.Delay(3000);
 
-            OkResult ok = result as OkResult;
+            UserController controller = new UserController();
+            IActionResult result = controller.Update(user.Id, "Updated", "User", 21);
+
+            OkResult? ok = result as OkResult;
 
             Assert.NotNull(ok);
-            Assert.Equal(200, ok.StatusCode);
+            Assert.Equal(200, actual: ok.StatusCode);
         }
 
         [Fact]
@@ -68,18 +74,20 @@ namespace Tests.User.Api.Test
             {
                 FirstName = "Test",
                 LastName = "User",
-                Age = "20"
+                Age = 20
             };
             database.Users.Add(user);
             database.SaveChanges();
 
+            await Task.Delay(3000);
+
             UserController controller = new UserController();
             IActionResult result = controller.Delete(user.Id);
 
-            OkResult ok = result as OkResult;
+            OkResult? ok = result as OkResult;
 
             Assert.NotNull(ok);
-            Assert.Equal(200, ok.StatusCode);
+            Assert.Equal(200, actual: ok.StatusCode);
         }
     }
 }

@@ -11,20 +11,12 @@ namespace Tests.User.Api.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("api/users")]
-        // Multiple response types are possible with IActionResult, so provide attribute for all possible response types
-        [ProducesResponseType(StatusCodes.Status200OK, Type=typeof(Models.User))]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult Get(int id)
         {
             DatabaseContext database = new DatabaseContext();
             Models.User user = database.Users.Where(user => user.Id == id).First();
-
-            // Checks if a user exists, if not return http 404 error
-            if (user == null) {
-                return HTTPNotFound(); 
-            }
-            
             return Ok(user);
+            
         }
 
         /// <summary>
@@ -43,18 +35,20 @@ namespace Tests.User.Api.Controllers
         {
             DatabaseContext Database = new DatabaseContext();
 
-            // Validate the user model
-            if (ModelState.IsValid) {
+            // Validate user model
+            if (ModelState.IsValid)
+            {
                 Database.Users.Add(new Models.User
                 {
                     Age = age,
                     FirstName = firstName,
                     LastName = lastName
                 });
+
                 Database.SaveChanges();
             }
 
-            // Return created result
+            // Could change to Created() to return 201 status 
             return Ok();
         }
 
@@ -71,18 +65,14 @@ namespace Tests.User.Api.Controllers
         public IActionResult Update(int id, string firstName, string lastName, int age)
         {
             DatabaseContext Database = new DatabaseContext();
-            
-            // Validate user model
-            if (ModelState.IsValid) {
-                Database.Users.Update(new Models.User
-                {
-                    Age = age,
-                    FirstName = firstName,
-                    LastName = lastName,
-                    Id = id
-                });
-                Database.SaveChanges();
-            }
+            Database.Users.Update(new Models.User
+            {
+                Age = age,
+                FirstName = firstName,
+                LastName = lastName,
+                Id = id
+            });
+            Database.SaveChanges();
             return Ok();
         }
 
@@ -96,15 +86,11 @@ namespace Tests.User.Api.Controllers
         public IActionResult Delete(int id)
         {
             DatabaseContext database = new DatabaseContext();
-
-            // Validate user model
-            if (ModelState.IsValid) {
-                database.Users.Remove(new Models.User
-                {
-                    Id = id
-                });
-                database.SaveChanges();
-            }
+            database.Users.Remove(new Models.User
+            {
+                Id = id
+            });
+            database.SaveChanges();
             return Ok();
         }
     }
