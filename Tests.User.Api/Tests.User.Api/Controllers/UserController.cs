@@ -1,9 +1,17 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Tests.User.Api.Controllers
 {
     public class UserController : Controller
     {
+        private readonly DatabaseContext _database;
+
+        public UserController(DatabaseContext database)
+        {
+            _database = database;
+        }
+
         /// <summary>
         ///     Gets a user
         /// </summary>
@@ -11,10 +19,12 @@ namespace Tests.User.Api.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("api/users")]
-        public IActionResult Get(int id)
+        public async Task<IActionResult> Get(int id)
         {
-            DatabaseContext database = new DatabaseContext();
-            Models.User user = database.Users.Where(user => user.Id == id).First();
+            Models.User user = await _database.Users.FirstOrDefaultAsync(user => user.Id == id);
+
+            if (user == null) { return NotFound(); }
+
             return Ok(user);
         }
 
@@ -27,16 +37,15 @@ namespace Tests.User.Api.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("api/users")]
-        public IActionResult Create(string firstName, string lastName, string age)
+        public async Task<IActionResult> Create(string firstName, string lastName, string age)
         {
-            DatabaseContext Database = new DatabaseContext();
-            Database.Users.Add(new Models.User
+            _database.Users.Add(new Models.User
             {
                 Age = age,
                 FirstName = firstName,
                 LastName = lastName
             });
-            Database.SaveChanges();
+            await _database.SaveChangesAsync();
             return Ok();
         }
 
@@ -50,17 +59,18 @@ namespace Tests.User.Api.Controllers
         /// <returns></returns>
         [HttpPut]
         [Route("api/users")]
-        public IActionResult Update(int id, string firstName, string lastName, string age)
+        public async Task<IActionResult> Update(int id, string firstName, string lastName, string age)
         {
-            DatabaseContext Database = new DatabaseContext();
-            Database.Users.Update(new Models.User
-            {
-                Age = age,
-                FirstName = firstName,
-                LastName = lastName,
-                Id = id
-            });
-            Database.SaveChanges();
+            Models.User user = await _database.Users.FirstOrDefaultAsync(user => user.Id == id);
+
+            if (user == null) { return NotFound(); }
+
+            user.Age = age;
+            user.FirstName = firstName;
+            user.LastName = lastName;
+            user.Id = id;
+
+            await _database.SaveChangesAsync();
             return Ok();
         }
 
@@ -71,14 +81,14 @@ namespace Tests.User.Api.Controllers
         /// <returns></returns>
         [HttpDelete]
         [Route("api/users")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            DatabaseContext database = new DatabaseContext();
-            database.Users.Remove(new Models.User
-            {
-                Id = id
-            });
-            database.SaveChanges();
+            Models.User user = await _database.Users.FirstOrDefaultAsync(user => user.Id == id);
+
+            if (user == null) { return NotFound(); }
+
+            _database.Users.Remove(user);
+            await _database.SaveChangesAsync();
             return Ok();
         }
     }
